@@ -8,7 +8,13 @@ local Player = {
     image = nil,
     animation = nil,
     isMoving = false,
-    currentAction = nil
+    currentAction = nil,
+    tool = {
+        x = nil,
+        y = nil,
+        h = 0,
+        w = 0
+    }
 }
 
 local buttons = {
@@ -46,6 +52,23 @@ local frames = {
     AXE_DOWN = nil
 }
 
+local toolBoundingBox = {
+    HAND = {
+        SIZE = {32, 32},
+        LEFT = {-24, 8},
+        RIGHT = {24, 8},
+        DOWN = {0, 32},
+        UP = {0, -24}
+    },
+    SHOVEL = {
+        SIZE = {32, 24},
+        LEFT = {-24, 8},
+        RIGHT = {24, 8},
+        DOWN = {0, 32},
+        UP = {0, -24}
+    }
+}
+
 local MOVE_DIRECTION = buttons.DOWN
 local MAIN_ACTION = actions.STANDING
 local SELECTED_TOOL = tools.HAND
@@ -77,11 +100,6 @@ function Player.load()
     Player.animation = frames[MOVE_DIRECTION]
 end
 
-function Player.draw()
-    love.graphics.setColor(255, 255, 255)
-    Player.animation:draw(Player.image, Player.x, Player.y)
-end
-
 function Player.updateInput(Input)
     if Input:down('up') then
         MOVE_DIRECTION = buttons.UP
@@ -102,10 +120,26 @@ function Player.updateInput(Input)
     end
 end
 
+function Player.getTool()
+    local toolBoundingBox = toolBoundingBox[SELECTED_TOOL]
+    return toolBoundingBox, toolBoundingBox[MOVE_DIRECTION]
+end
+
 function Player.update(dt, Input)
     Player.updateInput(Input)
     Player.animation:update(dt)
     Player.isMoving = MAIN_ACTION == actions.WALKING
+
+    if SELECTED_TOOL then
+        local toolBox, toolDirection = Player.getTool()
+        Player.tool.x = Player.x + 16 + toolDirection[1]
+        Player.tool.y = Player.y + 16 + toolDirection[2]
+        Player.tool.h = toolBox.SIZE[1]
+        Player.tool.w = toolBox.SIZE[2]
+    else
+        Player.tool.x = nil
+        Player.tool.y = nil
+    end
 
     -- Debugging
     Debugger.addMessage(2, "MAIN_ACTION", MAIN_ACTION)
@@ -137,6 +171,18 @@ function Player.move(dt)
         elseif MOVE_DIRECTION == buttons.LEFT then
             Player.x = Player.x - Player.speed * dt
         end
+    end
+end
+
+function Player.draw()
+    love.graphics.setColor(255, 255, 255)
+    Player.animation:draw(Player.image, Player.x, Player.y)
+
+    -- Draw item collision
+    if Player.tool.x and Player.tool.y then
+        local toolCollision = Player.getTool()
+        love.graphics.setColor(0, 255, 60, 0.5)
+        love.graphics.rectangle("fill", Player.tool.x, Player.tool.y, Player.tool.h, Player.tool.w)
     end
 end
 

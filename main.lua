@@ -6,7 +6,8 @@ function love.load()
     Player = require 'engine.player'
     backgroundController = require 'engine.background'
     Baton = require 'lib.baton'
-	Debugger = require 'lib.debugger'
+    Debugger = require 'lib.debugger'
+    Grid = require('engine.gridsys')
 
     Player.load()
 
@@ -33,16 +34,18 @@ function love.update(dt)
     camera:update(dt)
     Player.update(dt, Input)
     Player.move(dt)
-	Debugger.addMessage(1, "FPS", love.timer.getFPS())
+    Debugger.addMessage(1, "FPS", love.timer.getFPS())
 end
 
 function love.draw()
     camera:attach()
     -- Draw your game here
     backgroundController.fill(backgroundImg, backgroundQuad)
+    Grid.draw(Player)
     Player.draw()
-    camera:detach()
     camera:draw()
 
-	Debugger.drawMessages()
+    camera:detach()
+
+    Debugger.drawMessages()
 end
