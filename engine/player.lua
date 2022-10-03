@@ -1,5 +1,6 @@
 local anim8 = require 'lib.anim8'
-Debugger = require 'lib.debugger'
+local Debugger = require 'lib.debugger'
+local Grid = require 'engine.gridsys'
 
 local Player = {
     x = 100,
@@ -8,8 +9,8 @@ local Player = {
     image = nil,
     animation = nil,
     isMoving = false,
-    currentAction = nil,
     tool = {
+        canModifyTerrain = false,
         x = nil,
         y = nil,
         h = 0,
@@ -17,7 +18,7 @@ local Player = {
     }
 }
 
-local buttons = {
+local BUTTONS = {
     UP = "UP",
     DOWN = "DOWN",
     LEFT = "LEFT",
@@ -25,22 +26,21 @@ local buttons = {
     DIE = "DIE"
 }
 
-local actions = {
+local ACTIONS = {
     WALKING = "WALKING",
-    AXE = "AXE",
     STANDING = "STANDING",
     DIE = "DIE",
-    ATTACK = "ATTACK"
+    USE = "USE"
 }
 
-local tools = {
+local OBJECTS = {
     SHOVEL = "SHOVEL",
     AXE = "AXE",
     SWORD = "SWORD",
-    HAND = "HAND"
+    HAND = "HAND",
 }
 
-local frames = {
+local FRAMES = {
     LEFT = nil,
     RIGHT = nil,
     UP = nil,
@@ -52,7 +52,7 @@ local frames = {
     AXE_DOWN = nil
 }
 
-local toolBoundingBox = {
+local TOOL_BOUNDING_BOX = {
     HAND = {
         SIZE = {32, 32},
         LEFT = {-24, 8},
@@ -65,110 +65,126 @@ local toolBoundingBox = {
         LEFT = {-24, 8},
         RIGHT = {24, 8},
         DOWN = {0, 32},
-        UP = {0, -24}
+        UP = {0, -16}
     }
 }
 
-local MOVE_DIRECTION = buttons.DOWN
-local MAIN_ACTION = actions.STANDING
-local SELECTED_TOOL = tools.HAND
+local MOVE_DIRECTION = BUTTONS.DOWN
+local MAIN_ACTION = ACTIONS.STANDING
+local SELECTED_OBJECT = OBJECTS.HAND
 
 function Player.load()
     Player.image = love.graphics.newImage('sprites/player_default.png')
     local defaultAnim = anim8.newGrid(64, 64, Player.image:getWidth(), Player.image:getHeight())
 
     -- Define all animations
-    frames.DOWN = anim8.newAnimation(defaultAnim('1-9', 11), 0.08)
-    frames.LEFT = anim8.newAnimation(defaultAnim('1-9', 10), 0.08)
-    frames.RIGHT = anim8.newAnimation(defaultAnim('1-9', 12), 0.08)
-    frames.UP = anim8.newAnimation(defaultAnim('1-9', 9), 0.08)
-    frames.DIE = anim8.newAnimation(defaultAnim('1-6', 21), 0.1)
+    FRAMES.DOWN = anim8.newAnimation(defaultAnim('1-9', 11), 0.08)
+    FRAMES.LEFT = anim8.newAnimation(defaultAnim('1-9', 10), 0.08)
+    FRAMES.RIGHT = anim8.newAnimation(defaultAnim('1-9', 12), 0.08)
+    FRAMES.UP = anim8.newAnimation(defaultAnim('1-9', 9), 0.08)
+    FRAMES.DIE = anim8.newAnimation(defaultAnim('1-6', 21), 0.1)
 
     -- Hand animations
-    frames.HAND_UP = anim8.newAnimation(defaultAnim('1-6', 13), 0.085)
-    frames.HAND_LEFT = anim8.newAnimation(defaultAnim('1-6', 14), 0.085)
-    frames.HAND_DOWN = anim8.newAnimation(defaultAnim('1-6', 15), 0.085)
-    frames.HAND_RIGHT = anim8.newAnimation(defaultAnim('1-6', 16), 0.085)
+    FRAMES.HAND_UP = anim8.newAnimation(defaultAnim('1-6', 13), 0.085)
+    FRAMES.HAND_LEFT = anim8.newAnimation(defaultAnim('1-6', 14), 0.085)
+    FRAMES.HAND_DOWN = anim8.newAnimation(defaultAnim('1-6', 15), 0.085)
+    FRAMES.HAND_RIGHT = anim8.newAnimation(defaultAnim('1-6', 16), 0.085)
 
     -- Axe animations
-    frames.AXE_UP = anim8.newAnimation(defaultAnim('7-12', 13), 0.085)
-    frames.AXE_LEFT = anim8.newAnimation(defaultAnim('7-12', 14), 0.085)
-    frames.AXE_RIGHT = anim8.newAnimation(defaultAnim('7-12', 16), 0.085)
-    frames.AXE_DOWN = anim8.newAnimation(defaultAnim('7-12', 15), 0.085)
+    FRAMES.AXE_UP = anim8.newAnimation(defaultAnim('7-12', 13), 0.085)
+    FRAMES.AXE_LEFT = anim8.newAnimation(defaultAnim('7-12', 14), 0.085)
+    FRAMES.AXE_RIGHT = anim8.newAnimation(defaultAnim('7-12', 16), 0.085)
+    FRAMES.AXE_DOWN = anim8.newAnimation(defaultAnim('7-12', 15), 0.085)
+
+    -- Shovel animations
+    FRAMES.SHOVEL_UP = anim8.newAnimation(defaultAnim('7-12', 13), 0.085)
+    FRAMES.SHOVEL_LEFT = anim8.newAnimation(defaultAnim('7-12', 14), 0.085)
+    FRAMES.SHOVEL_RIGHT = anim8.newAnimation(defaultAnim('7-12', 16), 0.085)
+    FRAMES.SHOVEL_DOWN = anim8.newAnimation(defaultAnim('7-12', 15), 0.085)
 
     -- Set the default animation
-    Player.animation = frames[MOVE_DIRECTION]
+    Player.animation = FRAMES[MOVE_DIRECTION]
 end
 
 function Player.updateInput(Input)
-    if Input:down('up') then
-        MOVE_DIRECTION = buttons.UP
-        MAIN_ACTION = actions.WALKING
+    if Input:down("action") then
+        MAIN_ACTION = ACTIONS.USE
+    elseif Input:down('up') then
+        MOVE_DIRECTION = BUTTONS.UP
+        MAIN_ACTION = ACTIONS.WALKING
     elseif Input:down("left") then
-        MOVE_DIRECTION = buttons.LEFT
-        MAIN_ACTION = actions.WALKING
+        MOVE_DIRECTION = BUTTONS.LEFT
+        MAIN_ACTION = ACTIONS.WALKING
     elseif Input:down("down") then
-        MOVE_DIRECTION = buttons.DOWN
-        MAIN_ACTION = actions.WALKING
+        MOVE_DIRECTION = BUTTONS.DOWN
+        MAIN_ACTION = ACTIONS.WALKING
     elseif Input:down("right") then
-        MOVE_DIRECTION = buttons.RIGHT
-        MAIN_ACTION = actions.WALKING
-    elseif Input:down("action") then
-        MAIN_ACTION = actions.ATTACK
+        MOVE_DIRECTION = BUTTONS.RIGHT
+        MAIN_ACTION = ACTIONS.WALKING
     else
-        MAIN_ACTION = actions.STANDING
+        MAIN_ACTION = ACTIONS.STANDING
     end
 end
 
-function Player.getTool()
-    local toolBoundingBox = toolBoundingBox[SELECTED_TOOL]
+local function getTool()
+    local toolBoundingBox = TOOL_BOUNDING_BOX[SELECTED_OBJECT]
     return toolBoundingBox, toolBoundingBox[MOVE_DIRECTION]
 end
 
 function Player.update(dt, Input)
     Player.updateInput(Input)
     Player.animation:update(dt)
-    Player.isMoving = MAIN_ACTION == actions.WALKING
+    Player.isMoving = MAIN_ACTION == ACTIONS.WALKING
+    Player.selected_object = SELECTED_OBJECT
 
-    if SELECTED_TOOL then
-        local toolBox, toolDirection = Player.getTool()
+    if SELECTED_OBJECT then
+        local toolBox, toolDirection = getTool()
         Player.tool.x = Player.x + 16 + toolDirection[1]
         Player.tool.y = Player.y + 16 + toolDirection[2]
         Player.tool.h = toolBox.SIZE[1]
         Player.tool.w = toolBox.SIZE[2]
+
+        if SELECTED_OBJECT == OBJECTS.AXE or SELECTED_OBJECT == OBJECTS.SHOVEL then
+            Player.tool.canModifyTerrain = true
+        end
     else
         Player.tool.x = nil
         Player.tool.y = nil
+        Player.tool.canModifyTerrain = false
     end
 
     -- Debugging
     Debugger.addMessage(2, "MAIN_ACTION", MAIN_ACTION)
     Debugger.addMessage(3, "MOVE_DIRECTION", MOVE_DIRECTION)
-    Debugger.addMessage(4, "SELECTED_TOOL", SELECTED_TOOL)
+    Debugger.addMessage(4, "SELECTED_TOOL", SELECTED_OBJECT)
 end
 
 function Player.move(dt)
-    if MAIN_ACTION == actions.WALKING then
+    if MAIN_ACTION == ACTIONS.WALKING then
         -- Set the animation
-        Player.animation = frames[MOVE_DIRECTION]
-    elseif MAIN_ACTION == actions.STANDING then
+        Player.animation = FRAMES[MOVE_DIRECTION]
+    elseif MAIN_ACTION == ACTIONS.STANDING then
         Player.animation:gotoFrame(1)
-        Player.animation = frames[MOVE_DIRECTION]
-    elseif MAIN_ACTION == actions.ATTACK then
-        Player.animation = frames[SELECTED_TOOL .. "_" .. MOVE_DIRECTION]
+        Player.animation = FRAMES[MOVE_DIRECTION]
+    elseif MAIN_ACTION == ACTIONS.USE then
+        if SELECTED_OBJECT == OBJECTS.AXE or SELECTED_OBJECT == OBJECTS.HAND or SELECTED_OBJECT == OBJECTS.SHOVEL or
+            SELECTED_OBJECT == OBJECTS.SWORD then
+            Player.animation = FRAMES[SELECTED_OBJECT .. "_" .. MOVE_DIRECTION]
+            Grid.placeObject("HOLE")
+        end
     else
-        Player.animation = frames[MOVE_DIRECTION]
+        Player.animation = FRAMES[MOVE_DIRECTION]
         Player.animation:gotoFrame(1)
     end
 
     if Player.isMoving then
-        if MOVE_DIRECTION == buttons.DOWN then
+        if MOVE_DIRECTION == BUTTONS.DOWN then
             Player.y = Player.y + Player.speed * dt
-        elseif MOVE_DIRECTION == buttons.UP then
+        elseif MOVE_DIRECTION == BUTTONS.UP then
             Player.y = Player.y - Player.speed * dt
-        elseif MOVE_DIRECTION == buttons.RIGHT then
+        elseif MOVE_DIRECTION == BUTTONS.RIGHT then
             Player.x = Player.x + Player.speed * dt
-        elseif MOVE_DIRECTION == buttons.LEFT then
+        elseif MOVE_DIRECTION == BUTTONS.LEFT then
             Player.x = Player.x - Player.speed * dt
         end
     end
@@ -180,7 +196,7 @@ function Player.draw()
 
     -- Draw item collision
     if Player.tool.x and Player.tool.y then
-        local toolCollision = Player.getTool()
+        local toolCollision = getTool()
         love.graphics.setColor(0, 255, 60, 0.5)
         love.graphics.rectangle("fill", Player.tool.x, Player.tool.y, Player.tool.h, Player.tool.w)
     end

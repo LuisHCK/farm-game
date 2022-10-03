@@ -8,6 +8,7 @@ function love.load()
     Baton = require 'lib.baton'
     Debugger = require 'lib.debugger'
     Grid = require('engine.gridsys')
+    Objects = require('engine.objects')
 
     Player.load()
 
@@ -19,7 +20,9 @@ function love.load()
             right = {'key:right', 'key:d', 'axis:leftx+', 'button:dpright'},
             up = {'key:up', 'key:w', 'axis:lefty-', 'button:dpup'},
             down = {'key:down', 'key:s', 'axis:lefty+', 'button:dpdown'},
-            action = {'key:x', 'button:a', 'mouse:1'}
+            action = {'key:x', 'button:a', 'mouse:1'},
+            next = {'key:1'},
+            prev = {'key:2'}
         },
         pairs = {
             move = {'left', 'right', 'up', 'down'}
@@ -34,18 +37,31 @@ function love.update(dt)
     camera:update(dt)
     Player.update(dt, Input)
     Player.move(dt)
+    -- Grid system
+    local playerTool = Player.tool
+    Grid.update(playerTool.x, playerTool.y, playerTool.h, playerTool.w)
+
     Debugger.addMessage(1, "FPS", love.timer.getFPS())
 end
 
 function love.draw()
-    camera:attach()
+    -- camera:attach()
+
     -- Draw your game here
     backgroundController.fill(backgroundImg, backgroundQuad)
-    Grid.draw(Player)
-    Player.draw()
-    camera:draw()
 
-    camera:detach()
+    -- Draw grid
+    Grid.draw()
+
+    -- Player draw
+    Player.draw()
+
+    -- Objects
+    Objects.draw()
+
+    -- Camera stuff
+    -- camera:draw()
+    -- camera:detach()
 
     Debugger.drawMessages()
 end
