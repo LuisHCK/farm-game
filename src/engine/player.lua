@@ -74,33 +74,33 @@ local MAIN_ACTION = ACTIONS.STANDING
 local SELECTED_OBJECT = OBJECTS.HAND
 
 function Player.load()
-    Player.image = love.graphics.newImage('sprites/player_default.png')
+    Player.image = love.graphics.newImage('sprites/player_walk.png')
     local defaultAnim = anim8.newGrid(64, 64, Player.image:getWidth(), Player.image:getHeight())
 
     -- Define all animations
-    FRAMES.DOWN = anim8.newAnimation(defaultAnim('1-9', 11), 0.08)
-    FRAMES.LEFT = anim8.newAnimation(defaultAnim('1-9', 10), 0.08)
-    FRAMES.RIGHT = anim8.newAnimation(defaultAnim('1-9', 12), 0.08)
-    FRAMES.UP = anim8.newAnimation(defaultAnim('1-9', 9), 0.08)
-    FRAMES.DIE = anim8.newAnimation(defaultAnim('1-6', 21), 0.1)
+    FRAMES.DOWN = anim8.newAnimation(defaultAnim('1-9', 3), 0.08)
+    FRAMES.LEFT = anim8.newAnimation(defaultAnim('1-9', 2), 0.08)
+    FRAMES.RIGHT = anim8.newAnimation(defaultAnim('1-9', 4), 0.08)
+    FRAMES.UP = anim8.newAnimation(defaultAnim('1-9', 1), 0.08)
+    FRAMES.DIE = anim8.newAnimation(defaultAnim('1-6', 1), 0.1)
 
     -- Hand animations
-    FRAMES.HAND_UP = anim8.newAnimation(defaultAnim('1-6', 13), 0.085)
-    FRAMES.HAND_LEFT = anim8.newAnimation(defaultAnim('1-6', 14), 0.085)
-    FRAMES.HAND_DOWN = anim8.newAnimation(defaultAnim('1-6', 15), 0.085)
-    FRAMES.HAND_RIGHT = anim8.newAnimation(defaultAnim('1-6', 16), 0.085)
+    FRAMES.HAND_UP = anim8.newAnimation(defaultAnim('1-6', 1), 0.085)
+    FRAMES.HAND_LEFT = anim8.newAnimation(defaultAnim('1-6', 2), 0.085)
+    FRAMES.HAND_DOWN = anim8.newAnimation(defaultAnim('1-6', 3), 0.085)
+    FRAMES.HAND_RIGHT = anim8.newAnimation(defaultAnim('1-6', 4), 0.085)
 
     -- Axe animations
-    FRAMES.AXE_UP = anim8.newAnimation(defaultAnim('7-12', 13), 0.085)
-    FRAMES.AXE_LEFT = anim8.newAnimation(defaultAnim('7-12', 14), 0.085)
-    FRAMES.AXE_RIGHT = anim8.newAnimation(defaultAnim('7-12', 16), 0.085)
-    FRAMES.AXE_DOWN = anim8.newAnimation(defaultAnim('7-12', 15), 0.085)
+    FRAMES.AXE_UP = anim8.newAnimation(defaultAnim('1-9', 1), 0.085)
+    FRAMES.AXE_LEFT = anim8.newAnimation(defaultAnim('1-9', 2), 0.085)
+    FRAMES.AXE_RIGHT = anim8.newAnimation(defaultAnim('1-9', 3), 0.085)
+    FRAMES.AXE_DOWN = anim8.newAnimation(defaultAnim('1-9', 4), 0.085)
 
     -- Shovel animations
-    FRAMES.SHOVEL_UP = anim8.newAnimation(defaultAnim('7-12', 13), 0.085)
-    FRAMES.SHOVEL_LEFT = anim8.newAnimation(defaultAnim('7-12', 14), 0.085)
-    FRAMES.SHOVEL_RIGHT = anim8.newAnimation(defaultAnim('7-12', 16), 0.085)
-    FRAMES.SHOVEL_DOWN = anim8.newAnimation(defaultAnim('7-12', 15), 0.085)
+    FRAMES.SHOVEL_UP = anim8.newAnimation(defaultAnim('1-9', 1), 0.085)
+    FRAMES.SHOVEL_LEFT = anim8.newAnimation(defaultAnim('1-9', 2), 0.085)
+    FRAMES.SHOVEL_RIGHT = anim8.newAnimation(defaultAnim('1-9', 3), 0.085)
+    FRAMES.SHOVEL_DOWN = anim8.newAnimation(defaultAnim('1-9', 4), 0.085)
 
     -- Set the default animation
     Player.animation = FRAMES[MOVE_DIRECTION]
