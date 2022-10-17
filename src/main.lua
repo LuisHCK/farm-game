@@ -1,7 +1,7 @@
 function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
 
-	require('lib.nest'):init({ mode = "ctr" })
+	-- require('lib.nest'):init({ mode = "ctr" })
     stalkerX = require 'lib.camera'
     camera = stalkerX(nil, nil, nil, nil, 0.8)
     Player = require 'engine.player'
