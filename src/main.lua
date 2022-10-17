@@ -1,8 +1,9 @@
 function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
 
-    stalkerX = require 'lib.Camera'
-    camera = stalkerX()
+	require('lib.nest'):init({ mode = "ctr" })
+    stalkerX = require 'lib.camera'
+    camera = stalkerX(nil, nil, nil, nil, 0.8)
     Player = require 'engine.player'
     backgroundController = require 'engine.background'
     Baton = require 'lib.baton'
@@ -41,27 +42,33 @@ function love.update(dt)
     local playerTool = Player.tool
     Grid.update(playerTool.x, playerTool.y, playerTool.h, playerTool.w)
 
+    camera:update(dt)
+    camera:follow(Player.x, Player.y)
+
     Debugger.addMessage(1, "FPS", love.timer.getFPS())
 end
 
-function love.draw()
-    -- camera:attach()
+function love.draw(screen)
+    if screen ~= "top" then
+        camera:attach()
 
-    -- Draw your game here
-    backgroundController.fill(backgroundImg, backgroundQuad)
+        -- Draw your game here
+        backgroundController.draw(backgroundImg, backgroundQuad)
 
-    -- Draw grid
-    Grid.draw()
+        -- Draw grid
+        Grid.draw()
 
-    -- Player draw
-    Player.draw()
+        -- Player draw
+        Player.draw()
 
-    -- Objects
-    Objects.draw()
+        -- Objects
+        Objects.draw()
 
-    -- Camera stuff
-    -- camera:draw()
-    -- camera:detach()
+        -- Camera stuff
+        camera:draw()
+        camera:detach()
 
-    Debugger.drawMessages()
+        Debugger.drawMessages()
+
+    end
 end

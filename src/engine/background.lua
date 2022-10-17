@@ -12,7 +12,7 @@ function Background.load()
     return img, love.graphics.newQuad(0, 0, width, height, imageWidth, imageHeight) 
 end
 
-function Background.fill(image, quad)
+function Background.draw(image, quad)
     love.graphics.setColor(255, 255, 255)
     love.graphics.draw(image, quad, 0, 0)
 end
