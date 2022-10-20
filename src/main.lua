@@ -1,19 +1,25 @@
 function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
 
-	-- require('lib.nest'):init({ mode = "ctr" })
+    require('lib.nest'):init({
+        mode = "ctr"
+    })
+    -- Camera setup
     stalkerX = require 'lib.camera'
     camera = stalkerX(nil, nil, nil, nil, 0.8)
+    camera:setFollowStyle('TOPDOWN')
+
     Player = require 'engine.player'
-    backgroundController = require 'engine.background'
     Baton = require 'lib.baton'
     Debugger = require 'lib.debugger'
     Grid = require('engine.gridsys')
     Objects = require('engine.objects')
+    sti = require "lib.sti"
+
+    windowWidth = love.graphics.getWidth()
+    windowHeight = love.graphics.getHeight()
 
     Player.load()
-
-    backgroundImg, backgroundQuad = backgroundController.load()
 
     Input = Baton.new {
         controls = {
@@ -31,32 +37,34 @@ function love.load()
         joystick = love.joystick.getJoysticks()[1]
     }
 
+    map = sti("tilemaps/main_farm.lua")
+    camera:setBounds(-100, -100, 1024, 1024)
 end
 
 function love.update(dt)
+    map:update(dt)
     Input:update()
     camera:update(dt)
     Player.update(dt, Input)
     Player.move(dt)
     -- Grid system
     local playerTool = Player.tool
-    Grid.update(playerTool.x, playerTool.y, playerTool.h, playerTool.w)
+    -- Grid.update(playerTool.x, playerTool.y, playerTool.h, playerTool.w)
 
     camera:update(dt)
     camera:follow(Player.x, Player.y)
 
     Debugger.addMessage(1, "FPS", love.timer.getFPS())
+    Debugger.addMessage(5, "camera", tostring(camera.x) .. ", " .. tostring(camera.y))
 end
 
 function love.draw(screen)
     if screen ~= "top" then
+        map:draw(-camera.x, -camera.y)
         camera:attach()
 
-        -- Draw your game here
-        backgroundController.draw(backgroundImg, backgroundQuad)
-
         -- Draw grid
-        Grid.draw()
+        -- Grid.draw()
 
         -- Player draw
         Player.draw()
@@ -69,6 +77,5 @@ function love.draw(screen)
         camera:detach()
 
         Debugger.drawMessages()
-
     end
 end
