@@ -25,6 +25,14 @@ SOFTWARE.
 local function lerp(a, b, x) return a + (b - a)*x end
 local function csnap(v, x) return math.ceil(v/x)*x - x/2 end
 
+local function mouseGetPosition()
+    if love.mouse and love.mouse.getPosition then
+        return love.mouse.getPosition() 
+    else
+        return 0, 0
+    end
+end
+
 -- Shake according to https://jonny.morrill.me/en/blog/gamedev-how-to-implement-a-camera-shake-effect/
 local function newShake(amplitude, duration, frequency)
     local self = {
@@ -128,7 +136,7 @@ function Camera:toCameraCoords(x, y)
 end
 
 function Camera:getMousePosition()
-    return self:toWorldCoords(love.mouse.getPosition())
+    return self:toWorldCoords(mouseGetPosition())
 end
 
 function Camera:shake(intensity, duration, frequency, axes)
@@ -140,7 +148,7 @@ function Camera:shake(intensity, duration, frequency, axes)
 end
 
 function Camera:update(dt)
-    self.mx, self.my = self:toWorldCoords(love.mouse.getPosition())
+    self.mx, self.my = self:toWorldCoords(mouseGetPosition())
 
     -- Flash --
     if self.flashing then
