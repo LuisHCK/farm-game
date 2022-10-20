@@ -14,7 +14,7 @@ function love.load()
     Debugger = require 'lib.debugger'
     Grid = require('engine.gridsys')
     Objects = require('engine.objects')
-    sti = require "lib.sti"
+    loveTileMap = require('lib.lovetilemap')
 
     windowWidth = love.graphics.getWidth()
     windowHeight = love.graphics.getHeight()
@@ -37,12 +37,12 @@ function love.load()
         joystick = love.joystick.getJoysticks()[1]
     }
 
-    map = sti("tilemaps/main_farm.lua")
     camera:setBounds(-100, -100, 1024, 1024)
+    loveTileMap:Load("tilemaps/main_farm.tmx")
 end
 
 function love.update(dt)
-    map:update(dt)
+    --map:update(dt)
     Input:update()
     camera:update(dt)
     Player.update(dt, Input)
@@ -60,7 +60,8 @@ end
 
 function love.draw(screen)
     if screen ~= "top" then
-        map:draw(-camera.x, -camera.y)
+        --map:draw(-camera.x, -camera.y)
+        loveTileMap:DrawNearCam(camera.x, camera.y)
         camera:attach()
 
         -- Draw grid
