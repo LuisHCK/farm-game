@@ -1,12 +1,12 @@
 local Utils = {}
 
-function Utils.split(str, char)
-    local words = {}
-    for word in string.gmatch(str, '([^'.. char ..']+)') do
-        table.insert(words, #words + 1, word)
+function Utils:split(str, delimiter)
+    local results = {}
+    for s in string.gmatch(str, "[^" .. delimiter .. "]+") do
+        results[#results + 1] = s
     end
 
-    return words
+    return results
 end
 
 return Utils

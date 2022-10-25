@@ -87,7 +87,10 @@ end
 -- checks whether a mouse buttons is down or not.
 -- note that baton doesn't detect mouse movement, just the buttons
 function sourceFunction.keyboardMouse.mouse(button)
-    return love.mouse.isDown(tonumber(button)) and 1 or 0
+    if love.mouse then
+        return love.mouse.isDown(tonumber(button)) and 1 or 0
+    end
+    return 0
 end
 
 -- checks the position of a joystick axis

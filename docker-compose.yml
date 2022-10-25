@@ -1,0 +1,9 @@
+version: '3'
+services:
+  game:
+    container_name: farmgame-build
+    build: .
+    
+    volumes:
+      - .:/opt/project
+      - ./build:/opt/project/build
